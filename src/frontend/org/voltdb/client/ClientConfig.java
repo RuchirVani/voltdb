@@ -123,6 +123,18 @@ public class ClientConfig {
      * @param password A cleartext or hashed passowrd.
      * @param listener {@link ClientStatusListenerExt} implementation to receive callbacks.
      * @param cleartext Whether the password is hashed.
+     */
+    public ClientConfig(String username, String password, boolean cleartext, ClientStatusListenerExt listener) {
+        this(username, password, cleartext, listener, ClientAuthHashScheme.HASH_SHA256);
+    }
+    /**
+     * <p>Configuration for a client that specifies authentication credentials. The username and
+     * password can be null or the empty string. Also specifies a status listener.</p>
+     *
+     * @param username Cleartext username.
+     * @param password A cleartext or hashed passowrd.
+     * @param listener {@link ClientStatusListenerExt} implementation to receive callbacks.
+     * @param cleartext Whether the password is hashed.
      * @param scheme Client password hash scheme
      */
     public ClientConfig(String username, String password, boolean cleartext, ClientStatusListenerExt listener, ClientAuthHashScheme scheme) {
