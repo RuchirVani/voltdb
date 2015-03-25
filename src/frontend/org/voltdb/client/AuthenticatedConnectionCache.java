@@ -185,7 +185,7 @@ public class AuthenticatedConnectionCache {
             // Add a callback listener for this client, to detect if
             // a connection gets closed/disconnected.  If this happens,
             // we need to remove it from the m_conections cache.
-            ClientConfig config = new ClientConfig(userName, password, true, new StatusListener(conn));
+            ClientConfig config = new ClientConfig(userName, password, true, new StatusListener(conn), ClientAuthHashScheme.HASH_SHA1);
 
             conn.user = userName;
             conn.client = (ClientImpl) ClientFactory.createClient(config);

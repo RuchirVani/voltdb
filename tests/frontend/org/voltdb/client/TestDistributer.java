@@ -314,8 +314,8 @@ public class TestDistributer extends TestCase {
 
             // And a distributer
             Distributer dist = new Distributer();
-            dist.createConnection("localhost", "", "", 20000);
-            dist.createConnection("localhost", "", "", 20001);
+            dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA1);
 
             Thread.sleep(1000);
             assertTrue(volt1.handler != null);
@@ -353,9 +353,9 @@ public class TestDistributer extends TestCase {
                     ClientConfig.DEFAULT_CONNECTION_TIMOUT_MS,
                     false, null /* subject */);
             dist.addClientStatusListener(csl);
-            dist.createConnection("localhost", "", "", 20000);
-            dist.createConnection("localhost", "", "", 20001);
-            dist.createConnection("localhost", "", "", 20002);
+            dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20002, ClientAuthHashScheme.HASH_SHA1);
 
             assertTrue(volt1.handler != null);
             assertTrue(volt0.handler != null);
@@ -438,7 +438,7 @@ public class TestDistributer extends TestCase {
                 1000 /* One second connection timeout */,
                 false, null /* subject */);
         dist.addClientStatusListener(new TimeoutMonitorCSL());
-        dist.createConnection("localhost", "", "", 20000);
+        dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
 
         // make sure it connected
         assertTrue(volt.handler != null);
@@ -502,7 +502,7 @@ public class TestDistributer extends TestCase {
                 2000 /* Two seconds connection timeout */,
                 false, null /* subject */);
         dist.addClientStatusListener(new TimeoutMonitorCSL());
-        dist.createConnection("localhost", "", "", 20000);
+        dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
 
         // make sure it connected
         assertTrue(volt.handler != null);
@@ -568,7 +568,7 @@ public class TestDistributer extends TestCase {
                 ClientConfig.DEFAULT_PROCEDURE_TIMOUT_NANOS,
                 30000 /* thirty second connection timeout */,
                 false, null /* subject */);
-        dist.createConnection("localhost", "", "", 20000);
+        dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
 
         // make sure it connected
         assertTrue(volt.handler != null);
@@ -623,7 +623,7 @@ public class TestDistributer extends TestCase {
                 false, null /* subject */);
         dist.addClientStatusListener(new TimeoutMonitorCSL());
         long start = System.currentTimeMillis();
-        dist.createConnection("localhost", "", "", 20000);
+        dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
 
         // don't respond to pings
         volt.handler.sendResponses.set(false);
@@ -729,7 +729,7 @@ public class TestDistributer extends TestCase {
         final String hostname = "doesnotexist";
         boolean threwException = false;
         try {
-            ConnectionUtil.getAuthenticatedConnection(hostname, "", new byte[0], 32, null);
+            ConnectionUtil.getAuthenticatedConnection(hostname, "", new byte[0], 32, null, ClientAuthHashScheme.HASH_SHA1);
         } catch (java.net.UnknownHostException e) {
             threwException = true;
             assertTrue(e.getMessage().equals(hostname));
