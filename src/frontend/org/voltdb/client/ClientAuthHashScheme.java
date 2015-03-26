@@ -41,6 +41,14 @@ public enum ClientAuthHashScheme {
         return theList[i];
     }
 
+    public final static ClientAuthHashScheme getByUnencodedLength(int i) {
+        switch (i) {
+            case 20: return HASH_SHA1;
+            case 32: return HASH_SHA256;
+            default: throw new IllegalArgumentException("Invalid Hash Scheme for given length: " + i);
+        }
+    }
+
     public final static int getDigestLength(ClientAuthHashScheme scheme) {
         switch (scheme) {
             case HASH_SHA1 : return 20;
