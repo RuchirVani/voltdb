@@ -183,8 +183,18 @@ public class TestDistributer extends TestCase {
                     SocketChannel client = socket.accept();
                     if (client != null) {
                         client.configureBlocking(true);
-                        final ByteBuffer lengthBuffer = ByteBuffer.allocate(5);//Extra byte for version also
+                        final ByteBuffer lengthBuffer = ByteBuffer.allocate(4);//Extra byte for version also
                         client.read(lengthBuffer);
+                        final ByteBuffer versionBuffer = ByteBuffer.allocate(1);//Extra byte for version also
+                        client.read(versionBuffer);
+                        versionBuffer.flip();
+                        ClientAuthHashScheme scheme = ClientAuthHashScheme.HASH_SHA256;
+                        if (versionBuffer.get() != 0) {
+                            final ByteBuffer schemeBuffer = ByteBuffer.allocate(1);//Extra byte for scheme also
+                            client.read(schemeBuffer);
+                            schemeBuffer.flip();
+                            scheme = ClientAuthHashScheme.get(schemeBuffer.get());
+                        }
 
                         final ByteBuffer serviceLengthBuffer = ByteBuffer.allocate(4);
                         while (serviceLengthBuffer.remaining() > 0)
@@ -205,13 +215,13 @@ public class TestDistributer extends TestCase {
                             client.read(usernameBuffer);
                         usernameBuffer.flip();
 
-                        final ByteBuffer passwordBuffer = ByteBuffer.allocate(20);
+                        final ByteBuffer passwordBuffer = ByteBuffer.allocate(ClientAuthHashScheme.getDigestLength(scheme));
                         while (passwordBuffer.remaining() > 0)
                             client.read(passwordBuffer);
                         passwordBuffer.flip();
 
                         final byte usernameBytes[] = new byte[usernameLength];
-                        final byte passwordBytes[] = new byte[20];
+                        final byte passwordBytes[] = new byte[ClientAuthHashScheme.getDigestLength(scheme)];
                         usernameBuffer.get(usernameBytes);
                         passwordBuffer.get(passwordBytes);
 
