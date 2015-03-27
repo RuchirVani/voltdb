@@ -328,7 +328,7 @@ public class HTTPClientInterface {
         // OR
         // Hashedassword must be a 64-byte hex-encoded SHA-256 hash (32 bytes unencoded)
         if (hashedPassword != null) {
-            if (hashedPassword.length() != 40 || hashedPassword.length() != 64) {
+            if (hashedPassword.length() != 40 && hashedPassword.length() != 64) {
                 return new AuthenticationResult(null, adminMode, username, "Hashedpassword must be a 40-byte hex-encoded SHA-1 hash (20 bytes unencoded). "
                         + "or 64-byte hex-encoded SHA-256 hash (32 bytes unencoded)");
             }

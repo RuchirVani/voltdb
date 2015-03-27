@@ -57,6 +57,14 @@ public enum ClientAuthHashScheme {
         }
     }
 
+    public final static int getHexencodedDigestLength(ClientAuthHashScheme scheme) {
+        switch (scheme) {
+            case HASH_SHA1 : return 40;
+            case HASH_SHA256 : return 64;
+            default : throw new IllegalArgumentException("Invalid Hash Scheme for Authentication.");
+        }
+    }
+
     public final static String getDigestScheme(ClientAuthHashScheme scheme) {
         switch (scheme) {
             case HASH_SHA1 : return "SHA-1";
