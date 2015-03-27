@@ -37,7 +37,9 @@ public enum ClientAuthHashScheme {
     }
 
     public final static ClientAuthHashScheme get(int i) {
-        if (i >= theList.length) return null;
+        if (i >= theList.length) {
+            throw new IllegalArgumentException("Invalid Hash Scheme");
+        }
         return theList[i];
     }
 

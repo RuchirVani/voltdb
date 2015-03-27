@@ -309,7 +309,7 @@ public class RegressionSuite extends TestCase {
         }
         final SocketChannel channel = (SocketChannel)
             ConnectionUtil.getAuthenticatedConnection(
-                    hNp.getHostText(), m_username, hashedPassword, port, null, ClientAuthHashScheme.HASH_SHA1)[0];
+                    hNp.getHostText(), m_username, hashedPassword, port, null, ClientAuthHashScheme.getByUnencodedLength(hashedPassword.length))[0];
         channel.configureBlocking(true);
         if (!noTearDown) {
             synchronized (m_clientChannels) {

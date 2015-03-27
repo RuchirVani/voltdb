@@ -28,8 +28,6 @@ import org.voltcore.logging.VoltLogger;
 
 import com.google_voltpatches.common.base.Predicate;
 import com.google_voltpatches.common.collect.FluentIterable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Maintain a set of the last N recently used credentials and
@@ -186,7 +184,9 @@ public class AuthenticatedConnectionCache {
             // a connection gets closed/disconnected.  If this happens,
             // we need to remove it from the m_conections cache.
             //detect hash scheme from length of hashed password if sent instead of password.
-            ClientConfig config = new ClientConfig(userName, password, true, new StatusListener(conn), ClientAuthHashScheme.getByUnencodedLength(hashedPassword.length));
+            ClientAuthHashScheme scheme = (conn.hashedPassword == null ?
+                    ClientAuthHashScheme.HASH_SHA256 : ClientAuthHashScheme.getByUnencodedLength(hashedPassword.length));
+            ClientConfig config = new ClientConfig(userName, password, true, new StatusListener(conn), scheme);
 
             conn.user = userName;
             conn.client = (ClientImpl) ClientFactory.createClient(config);

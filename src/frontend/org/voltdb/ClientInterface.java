@@ -621,12 +621,21 @@ public class ClientInterface implements SnapshotDaemon.DaemonInitiator {
                 return null;
             }
 
-            message.flip();//skip version
-            int aversion = message.get();
+            message.flip();
+            int aversion = message.get(); //Get version
             ClientAuthHashScheme hashScheme = ClientAuthHashScheme.HASH_SHA1;
             //If auth version is more than zero we read auth hashing scheme.
             if (aversion > 0) {
-                hashScheme = ClientAuthHashScheme.get(message.get());
+                try {
+                    hashScheme = ClientAuthHashScheme.get(message.get());
+                } catch (IllegalArgumentException ex) {
+                    authLog.warn("Failure to authenticate connection Invalid Hash Scheme presented.");
+                    //Send negative response
+                    responseBuffer.put(WIRE_PROTOCOL_FORMAT_ERROR).flip();
+                    socket.write(responseBuffer);
+                    socket.close();
+                    return null;
+                }
             }
             FastDeserializer fds = new FastDeserializer(message);
             final String service = fds.readString();
