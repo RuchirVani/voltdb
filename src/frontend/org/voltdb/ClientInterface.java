@@ -2472,6 +2472,7 @@ public class ClientInterface implements SnapshotDaemon.DaemonInitiator {
                     if (ds != null) {
                         oldValue = ByteBuffer.allocate(ds.getSerializedSize());
                         ds.serialize(oldValue);
+                        oldValue.flip();
                     }
 
                     if (buf.equals(oldValue)) return;
