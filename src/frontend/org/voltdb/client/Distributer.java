@@ -868,7 +868,7 @@ class Distributer {
     void createConnection(String host, String program, String password, int port, ClientAuthHashScheme scheme)
     throws UnknownHostException, IOException
     {
-        byte hashedPassword[] = ConnectionUtil.getSha256HashedPassword(password);
+        byte hashedPassword[] = ConnectionUtil.getHashedPassword(scheme, password);
         createConnectionWithHashedCredentials(host, program, hashedPassword, port, scheme);
     }
 

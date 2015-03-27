@@ -126,31 +126,6 @@ public class ConnectionUtil {
     }
 
     /**
-     * Get a hashed password using SHA-1 in a consistent way.
-     * @param password The password to encode.
-     * @return The bytes of the hashed password.
-     */
-    public static byte[] getSha256HashedPassword(String password) {
-        if (password == null)
-            return null;
-
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-        byte hashedPassword[] = null;
-        try {
-            hashedPassword = md.digest(password.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("JVM doesn't support UTF-8. Please use a supported JVM", e);
-        }
-        return hashedPassword;
-    }
-
-    /**
      * Create a connection to a Volt server and authenticate the connection.
      * @param host
      * @param username

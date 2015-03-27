@@ -188,13 +188,10 @@ public class TestDistributer extends TestCase {
                         final ByteBuffer versionBuffer = ByteBuffer.allocate(1);//Extra byte for version also
                         client.read(versionBuffer);
                         versionBuffer.flip();
-                        ClientAuthHashScheme scheme = ClientAuthHashScheme.HASH_SHA256;
-                        if (versionBuffer.get() != 0) {
-                            final ByteBuffer schemeBuffer = ByteBuffer.allocate(1);//Extra byte for scheme also
-                            client.read(schemeBuffer);
-                            schemeBuffer.flip();
-                            scheme = ClientAuthHashScheme.get(schemeBuffer.get());
-                        }
+                        final ByteBuffer schemeBuffer = ByteBuffer.allocate(1);//Extra byte for scheme also
+                        client.read(schemeBuffer);
+                        schemeBuffer.flip();
+                        ClientAuthHashScheme scheme = ClientAuthHashScheme.get(schemeBuffer.get());
 
                         final ByteBuffer serviceLengthBuffer = ByteBuffer.allocate(4);
                         while (serviceLengthBuffer.remaining() > 0)
@@ -342,6 +339,74 @@ public class TestDistributer extends TestCase {
     }
 
     @Test
+    public void testCreateConnectionSha256() throws Exception {
+        MockVolt volt0 = null;
+        MockVolt volt1 = null;
+        try {
+            // create a fake server and connect to it.
+            volt0 = new MockVolt(20000);
+            volt0.start();
+
+            volt1 = new MockVolt(20001);
+            volt1.start();
+
+            assertTrue(volt1.socket.isOpen());
+            assertTrue(volt0.socket.isOpen());
+
+            // And a distributer
+            Distributer dist = new Distributer();
+            dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA256);
+            dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA256);
+
+            Thread.sleep(1000);
+            assertTrue(volt1.handler != null);
+            assertTrue(volt0.handler != null);
+        }
+        finally {
+            if (volt0 != null) {
+                volt0.shutdown();
+            }
+            if (volt1 != null) {
+                volt1.shutdown();
+            }
+        }
+    }
+
+    @Test
+    public void testCreateConnectionMixHashed() throws Exception {
+        MockVolt volt0 = null;
+        MockVolt volt1 = null;
+        try {
+            // create a fake server and connect to it.
+            volt0 = new MockVolt(20000);
+            volt0.start();
+
+            volt1 = new MockVolt(20001);
+            volt1.start();
+
+            assertTrue(volt1.socket.isOpen());
+            assertTrue(volt0.socket.isOpen());
+
+            // And a distributer
+            Distributer dist = new Distributer();
+            dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA256);
+
+            Thread.sleep(1000);
+            assertTrue(volt1.handler != null);
+            assertTrue(volt0.handler != null);
+        }
+        finally {
+            if (volt0 != null) {
+                volt0.shutdown();
+            }
+            if (volt1 != null) {
+                volt1.shutdown();
+            }
+        }
+    }
+
+    @Test
     public void testQueue() throws Exception {
 
         // Uncongested connections get round-robin use.
@@ -365,6 +430,74 @@ public class TestDistributer extends TestCase {
             dist.addClientStatusListener(csl);
             dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
             dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20002, ClientAuthHashScheme.HASH_SHA1);
+
+            assertTrue(volt1.handler != null);
+            assertTrue(volt0.handler != null);
+            assertTrue(volt2.handler != null);
+
+            ProcedureInvocation pi1 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+            ProcedureInvocation pi2 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+            ProcedureInvocation pi3 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+            ProcedureInvocation pi4 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+            ProcedureInvocation pi5 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+            ProcedureInvocation pi6 = new ProcedureInvocation(++handle, "i1", new Integer(1));
+
+            dist.queue(pi1, new ThrowingCallback(), true, System.nanoTime(), 0);
+            dist.drain();
+            assertTrue(csl.m_exceptionHandled);
+            dist.queue(pi2, new ProcCallback(), true, System.nanoTime(), 0);
+            dist.queue(pi3, new ProcCallback(), true, System.nanoTime(), 0);
+            dist.queue(pi4, new ProcCallback(), true, System.nanoTime(), 0);
+            dist.queue(pi5, new ProcCallback(), true, System.nanoTime(), 0);
+            dist.queue(pi6, new ProcCallback(), true, System.nanoTime(), 0);
+
+            dist.drain();
+            System.err.println("Finished drain.");
+
+            assertEquals(2, volt0.handler.roundTrips.get());
+            assertEquals(2, volt1.handler.roundTrips.get());
+            assertEquals(2, volt2.handler.roundTrips.get());
+
+
+        }
+        finally {
+            if (volt0 != null) {
+                volt0.shutdown();
+            }
+            if (volt1 != null) {
+                volt1.shutdown();
+            }
+            if (volt2 != null) {
+                volt2.shutdown();
+            }
+        }
+    }
+
+    @Test
+    public void testQueueMixed() throws Exception {
+
+        // Uncongested connections get round-robin use.
+        MockVolt volt0, volt1, volt2;
+        int handle = 0;
+        volt0 = volt1 = volt2 = null;
+        try {
+            volt0 = new MockVolt(20000);
+            volt0.start();
+            volt1 = new MockVolt(20001);
+            volt1.start();
+            volt2 = new MockVolt(20002);
+            volt2.start();
+
+            CSL csl = new CSL();
+
+            Distributer dist = new Distributer(false,
+                    ClientConfig.DEFAULT_PROCEDURE_TIMOUT_NANOS,
+                    ClientConfig.DEFAULT_CONNECTION_TIMOUT_MS,
+                    false, null /* subject */);
+            dist.addClientStatusListener(csl);
+            dist.createConnection("localhost", "", "", 20000, ClientAuthHashScheme.HASH_SHA1);
+            dist.createConnection("localhost", "", "", 20001, ClientAuthHashScheme.HASH_SHA256);
             dist.createConnection("localhost", "", "", 20002, ClientAuthHashScheme.HASH_SHA1);
 
             assertTrue(volt1.handler != null);
