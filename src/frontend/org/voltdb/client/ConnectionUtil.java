@@ -203,16 +203,13 @@ public class ConnectionUtil {
             aChannel.configureBlocking(true);
             aChannel.socket().setTcpNoDelay(true);
 
-            int vs = 0;
-            if (scheme != ClientAuthHashScheme.HASH_SHA1)
-                vs = 1; //make version 1
-
             // encode strings
             byte[] serviceBytes = service == null ? null : service.getBytes(Constants.UTF8ENCODING);
             byte[] usernameBytes = username == null ? null : username.getBytes(Constants.UTF8ENCODING);
 
             // get the length of the data to serialize
-            int requestSize = 4 + (vs > 0 ? 2 : 1);
+            int requestSize = 4;
+            requestSize += 2; //version and scheme
             requestSize += serviceBytes == null ? 4 : 4 + serviceBytes.length;
             requestSize += usernameBytes == null ? 4 : 4 + usernameBytes.length;
             requestSize += hashedPassword.length;
@@ -221,10 +218,8 @@ public class ConnectionUtil {
 
             // serialize it
             b.putInt(requestSize - 4);                            // length prefix
-            b.put((byte) vs);                                      // version
-            if (vs > 0) {
-                b.put((byte )scheme.getValue());
-            }
+            b.put((byte) 1);                                      // version
+            b.put((byte )scheme.getValue());
             SerializationHelper.writeVarbinary(serviceBytes, b);  // data service (export|database)
             SerializationHelper.writeVarbinary(usernameBytes, b);
             b.put(hashedPassword);
